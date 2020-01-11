@@ -48,14 +48,18 @@ const APP: () = {
             &mut rcc,
         );
 
-        let mut exti = ctx.device.EXTI;
-        port_b.pb0.listen(SignalEdge::Falling, &mut exti);
-        port_c.pc14.listen(SignalEdge::Falling, &mut exti);
-        port_f.pf2.listen(SignalEdge::Falling, &mut exti);
-
         let mut timer = ctx.device.TIM17.timer(&mut rcc);
         timer.start(ring::FPS);
         timer.listen();
+
+        let mut exti = ctx.device.EXTI;
+
+        rcc.set_reset_mode(rcc::ResetMode::GPIO);
+        port_f.pf2.listen(SignalEdge::Rising, &mut exti);
+
+        port_c.pc14.listen(SignalEdge::Rising, &mut exti); // Minus button
+        port_b.pb0.listen(SignalEdge::Rising, &mut exti); // Plus button
+
 
         let ring = RGBRing::new(spi);
         init::LateResources { exti, timer, ring }
@@ -81,7 +85,6 @@ const APP: () = {
 
     #[task(binds = EXTI4_15, resources = [exti, ring])]
     fn btn_minus_click(ctx: btn_minus_click::Context) {
-        cortex_m::asm::bkpt();
         ctx.resources.ring.handle_event(RingEvent::Minus);
         ctx.resources.exti.unpend(Event::GPIO14);
     }

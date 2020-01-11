@@ -16,7 +16,7 @@ ws2812-spi = "0.2.0"
 
 [dependencies.stm32g0xx-hal]
 default-features = false
-features = ["rt", "stm32g030"]
+features = ["rt", "stm32g07x"]
 path = "../../hal/g0xx/"
 
 [profile.dev]
@@ -28,4 +28,4 @@ lto = true
 debug = false
 codegen-units = 1
 incremental = false
-lto = true
+lto = false

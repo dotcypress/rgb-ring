@@ -50,8 +50,8 @@ where
     pub fn new(spi: SPI) -> RGBRing<SPI> {
         let color = Hsv {
             hue: 0,
-            sat: 0,
-            val: 32,
+            sat: 30,
+            val: 30,
         };
         RGBRing {
             color,
@@ -113,11 +113,11 @@ where
                     let val = (self.frame as u8 + idx as u8) / 16;
                     *color = hsv2rgb(Hsv {
                         val,
-                        hue: 210,
-                        sat: 100 - self.frame as u8,
+                        hue: 200,
+                        sat: 150 - self.frame as u8,
                     });
                 }
-                if self.frame == 60 {
+                if self.frame == 64 {
                     self.anim = Animation::Main;
                 }
             }
