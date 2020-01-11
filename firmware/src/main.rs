@@ -2,7 +2,7 @@
 #![no_main]
 #![deny(warnings)]
 
-extern crate panic_semihosting;
+extern crate panic_halt;
 extern crate rtfm;
 extern crate stm32g0xx_hal as hal;
 
@@ -35,6 +35,7 @@ const APP: () = {
         let pll_cfg = PllConfig::with_hsi(4, 24, 2);
         let rcc_cfg = rcc::Config::pll().pll_cfg(pll_cfg);
         let mut rcc = ctx.device.RCC.freeze(rcc_cfg);
+        rcc.set_reset_mode(rcc::ResetMode::GPIO);
 
         let port_a = ctx.device.GPIOA.split(&mut rcc);
         let port_b = ctx.device.GPIOB.split(&mut rcc);
@@ -47,21 +48,17 @@ const APP: () = {
             3.mhz(),
             &mut rcc,
         );
+        let ring = RGBRing::new(spi);
+
+        let mut exti = ctx.device.EXTI;
+        port_f.pf2.listen(SignalEdge::Rising, &mut exti);
+        port_c.pc14.listen(SignalEdge::Rising, &mut exti);
+        port_b.pb0.listen(SignalEdge::Rising, &mut exti);
 
         let mut timer = ctx.device.TIM17.timer(&mut rcc);
         timer.start(ring::FPS);
         timer.listen();
 
-        let mut exti = ctx.device.EXTI;
-
-        rcc.set_reset_mode(rcc::ResetMode::GPIO);
-        port_f.pf2.listen(SignalEdge::Rising, &mut exti);
-
-        port_c.pc14.listen(SignalEdge::Rising, &mut exti); // Minus button
-        port_b.pb0.listen(SignalEdge::Rising, &mut exti); // Plus button
-
-
-        let ring = RGBRing::new(spi);
         init::LateResources { exti, timer, ring }
     }
 
