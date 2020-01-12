@@ -7,6 +7,7 @@ extern crate rtfm;
 extern crate stm32g0xx_hal as hal;
 
 mod ring;
+mod palette;
 
 use hal::exti::Event;
 use hal::gpio::*;
@@ -15,7 +16,7 @@ use hal::rcc::{self, PllConfig};
 use hal::spi;
 use hal::stm32;
 use hal::timer;
-use ring::{RGBRing, RingEvent};
+use ring::{RGBRing, ControlEvent};
 use rtfm::app;
 
 type LedTimer = timer::Timer<stm32::TIM17>;
@@ -70,19 +71,19 @@ const APP: () = {
 
     #[task(binds = EXTI0_1, resources = [exti, ring])]
     fn btn_plus_click(ctx: btn_plus_click::Context) {
-        ctx.resources.ring.handle_event(RingEvent::Plus);
+        ctx.resources.ring.handle_event(ControlEvent::Plus);
         ctx.resources.exti.unpend(Event::GPIO0);
     }
 
     #[task(binds = EXTI2_3, resources = [exti, ring])]
     fn btn_mode_click(ctx: btn_mode_click::Context) {
-        ctx.resources.ring.handle_event(RingEvent::Mode);
+        ctx.resources.ring.handle_event(ControlEvent::Mode);
         ctx.resources.exti.unpend(Event::GPIO2);
     }
 
     #[task(binds = EXTI4_15, resources = [exti, ring])]
     fn btn_minus_click(ctx: btn_minus_click::Context) {
-        ctx.resources.ring.handle_event(RingEvent::Minus);
+        ctx.resources.ring.handle_event(ControlEvent::Minus);
         ctx.resources.exti.unpend(Event::GPIO14);
     }
 };
