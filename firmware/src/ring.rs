@@ -101,20 +101,24 @@ where
         match &self.anim {
             Animation::Main => {
                 for idx in 0..self.sectors {
-                    buffer[(self.angle + idx) % LEDS] = proto;
+                    let temp = match self.temp {
+                        0 => idx % 2,
+                        x => x - idx % 2,
+                    };
+                    buffer[(self.angle + idx) % LEDS] = palette::get_color(self.luma, temp);
                 }
             }
             Animation::Ignition => {
                 for (idx, color) in buffer.iter_mut().enumerate() {
-                    let luma = (self.frame + idx) / 18;
-                    let temp = 7 - (self.frame + idx / 2) / 32;
+                    let luma = (self.frame + idx) / 40;
+                    let temp = 7 - (self.frame + idx * 2) / 20;
                     *color = palette::get_color(luma, temp);
                 }
             }
             Animation::Intro(mode) => match mode {
                 Mode::Luma => {
-                    for color in buffer.iter_mut() {
-                        let luma = (self.frame / 10) % 2;
+                   for (index, color) in buffer.iter_mut().enumerate() {
+                        let luma = (self.frame + index) % 5;
                         *color = palette::get_color(luma, self.temp);
                     }
                 }
@@ -145,8 +149,8 @@ where
                     }
                 }
                 Mode::Temp => {
-                    for color in buffer.iter_mut() {
-                        let temp = (self.frame / 6) % 7 + 1;
+                    for (index, color) in buffer.iter_mut().enumerate() {
+                        let temp = (self.frame + index) % 8;
                         *color = palette::get_color(self.luma, temp);
                     }
                 }
